@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions>
+	<library name="com.soling.cameramanager" file="/system/framework/CameraManagerLib.jar"/>
+</permissions>
