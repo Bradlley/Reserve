@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.view.SurfaceHolder;
 /**
  * @author:soling
@@ -40,6 +41,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	private int myVedioId = 0;
 	private boolean mIsCVBSIn = false;
 	private boolean mIsCameraOpen = false;
+	private static long mOpenCameraOkMillis = 0;
 	
 	//-------------------------------提供的camera 打开状态---------------------------------------
 	/**
@@ -301,6 +303,11 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 			isCvbsIn = false;
 		}
 		
+		if(SystemClock.elapsedRealtime() - mOpenCameraOkMillis  < 200){
+			LogUtil.v(TAG, "Camera check cvbs too fast " );
+			return;
+		}
+		
 		if(mIsCVBSIn != isCvbsIn){
 			mIsCVBSIn = isCvbsIn;
 			LogUtil.v(TAG, "Camera mIsCVBSIn = " + mIsCVBSIn );
@@ -329,7 +336,8 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	@Override
 	public void cameraHasOpened() {
 		try {
-			setCameraState(myVedioId,1);
+			mOpenCameraOkMillis = SystemClock.elapsedRealtime();
+			setCameraState(myVedioId,1);			
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

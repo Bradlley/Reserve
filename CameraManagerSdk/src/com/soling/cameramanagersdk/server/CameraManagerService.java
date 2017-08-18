@@ -138,7 +138,7 @@ public class CameraManagerService extends Service
     private boolean isCameraCanUse(){
     	for(int i = 0;i < 5;i++){
     		if(mCameraState[i] == 1){
-    			LogUtil.v(TAG, "isCameraCanUse i = " + i );
+    			LogUtil.v(TAG, "isCameraCanUse userid = " + i );
     			return false;
     		}
     	}
@@ -149,8 +149,7 @@ public class CameraManagerService extends Service
         final int N = mLibCallbacks.beginBroadcast();  
     	LogUtil.v(TAG, "startCamera vedioId =: " + vedioId );
         for (int i=0; i<N; i++) {   
-            try {
-            	LogUtil.v(TAG, Calendar.getInstance().getTimeInMillis() + " startCamera : " + vedioId);
+            try {            	
             	mLibCallbacks.getBroadcastItem(i).startCamera(vedioId);   
             }  
             catch (RemoteException e) {   
@@ -162,10 +161,9 @@ public class CameraManagerService extends Service
 	
 	public synchronized void stopCamera(int vedioId) {
         final int N = mLibCallbacks.beginBroadcast();  
-    	LogUtil.v(TAG, "startCamera vedioId =: " + vedioId );
+    	LogUtil.v(TAG, "stopCamera vedioId =: " + vedioId );
         for (int i=0; i<N; i++) {   
-            try {
-            	LogUtil.v(TAG, Calendar.getInstance().getTimeInMillis() + " stopCamera : " + vedioId);
+            try {            	
             	mLibCallbacks.getBroadcastItem(i).stopCamera(vedioId);   
             }  
             catch (RemoteException e) {   
