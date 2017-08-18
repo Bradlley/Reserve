@@ -92,11 +92,17 @@ public class CameraInterface {
     		if(null != mCamera)  
             {  
     			LogUtil.d(TAG, "doStopCamera start");
-                mCamera.setPreviewCallback(null); //--------清空预览数据
-                mCamera.stopPreview();  //--------停止预览
-                isPreviewing = false;  
-                mPreviwRate = -1f;  
-                mCamera.release();  //--------释放camera资源，关闭Camera
+    			try {  
+				 	mCamera.setPreviewCallback(null); //--------清空预览数据
+	                mCamera.stopPreview();  //--------停止预览
+	                isPreviewing = false;  
+	                mPreviwRate = -1f;  
+	                mCamera.release();  //--------释放camera资源，关闭Camera 
+	            } catch (Exception e) {  
+	                // TODO Auto-generated catch block  
+	                e.printStackTrace();  
+	            }  
+                
                 mCamera = null;
                 LogUtil.d(TAG, "doStopCamera over");
             }  	           
