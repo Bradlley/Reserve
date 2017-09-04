@@ -40,17 +40,17 @@ public class CameraInterface {
      * @param callback 
      */  
     public synchronized void doOpenCamera(CamOpenOverCallback callback,PreviewCallback preCallback){  
-        Log.i(TAG, "Camera open....");  
+    	LogUtil.i(TAG, "Camera open....");  
         doStopCamera();
         try {
-        	Log.i(TAG, "AVM try Camera open....");  
+        	LogUtil.i(TAG, "AVM try Camera open....");  
             mCamera = Camera.open();	           
         } catch (Exception e) {           
             callback.cameraOpenError();//------------camera打开失败回调
-            Log.i(TAG, "AVM catch Camera open....");  	         
+            LogUtil.i(TAG, "AVM catch Camera open....");  	         
             return;
         }        
-        Log.i(TAG, "Camera open over....");  
+        LogUtil.i(TAG, "Camera open over....");  
         if(mCamera != null){
             callback.cameraHasOpened(); //------------camera打开成功回调
         	mCamera.setPreviewCallback(preCallback);//---------camera预览数据回调
@@ -61,7 +61,7 @@ public class CameraInterface {
      * @param previewRate 
      */  
     public void doStartPreview(SurfaceHolder holder){  
-        Log.i(TAG, "doStartPreview...");  
+    	LogUtil.i(TAG, "doStartPreview...");  
         if(isPreviewing){  
             mCamera.stopPreview();  
             return;  
@@ -107,7 +107,7 @@ public class CameraInterface {
                 LogUtil.d(TAG, "doStopCamera over");
             }  	           
         } catch (Exception e) {
-            Log.e(TAG, "AVM doStopCamera error...."); 
+        	LogUtil.e(TAG, "AVM doStopCamera error...."); 
         }         
     }  
     

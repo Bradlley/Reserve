@@ -18,7 +18,7 @@ import android.util.Log;
  * @version V1.0 
  */  
 public class LogUtil {  
-	  private static final String AUTHOR = "camera ";
+	  private static final String AUTHOR = "cwc camera";
     /** 
      * isWrite:用于开关是否吧日志写入txt文件中</p> 
      */  
@@ -119,7 +119,7 @@ public class LogUtil {
     public static void v(String tag, String msg) {  
         // 是否开启日志输出  
         if (isDeBug) {  
-            Log.v(tag, msg);  
+        	Log.v(AUTHOR, tag+ " " + msg);   
         }  
         // 是否将日志写入文件  
         if (isWrite) {  
@@ -156,7 +156,7 @@ public class LogUtil {
      */  
     public static void i(String tag, String msg) {  
         if (isDeBug) {  
-            Log.i(tag, msg);  
+        	Log.i(AUTHOR, tag+ " " + msg); 
         }  
         if (isWrite) {  
             write(tag, msg);  
@@ -173,7 +173,7 @@ public class LogUtil {
      */  
     public static void w(String tag, String msg) {  
         if (isDeBug) {  
-            Log.w(tag, msg);  
+        	Log.w(AUTHOR, tag+ " " + msg); 
         }  
         if (isWrite) {  
             write(tag, msg);  
@@ -189,7 +189,7 @@ public class LogUtil {
      */  
     public static void e(String tag, String msg) {  
         if (isDeBug) {  
-            Log.w(tag, msg);  
+        	Log.e(AUTHOR, tag+ " " + msg); 
         }  
         if (isWrite) {  
             write(tag, msg);  

@@ -20,6 +20,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.view.SurfaceHolder;
+import android.view.View;
 /**
  * @author:soling
  */
@@ -42,6 +43,10 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	private boolean mIsCVBSIn = false;
 	private boolean mIsCameraOpen = false;
 	private static long mOpenCameraOkMillis = 0;
+	private final Handler mHandler = new Handler();
+	private int mBindNum = 0;
+
+	boolean mBindResult = false;
 	
 	//-------------------------------提供的camera 打开状态---------------------------------------
 	/**
@@ -71,6 +76,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	}	
 	
 	public CameraManager(Context mContext) {
+		LogUtil.v(TAG, " CameraManager init ");
 		this.mContext = mContext;
 		getNewStub();
 		HandlerThread thread = new HandlerThread("camera");
@@ -99,15 +105,16 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	}
 
 	private void getNewStub() {
-		LogUtil.v(TAG, "getNewStub() invoked ");
+		LogUtil.v(TAG, "getNewStub() invoked mServiceStub = " + mServiceStub);
 	
 		if(mContext!=null && mServiceStub == null){
 			Intent intent = new Intent();
 			intent.setClassName(ServerPackageName, ServerClassName);
-			mContext.bindService(intent,new ServiceConnection() {
+			mBindResult = mContext.bindService(intent,new ServiceConnection() {
 				
 				@Override
-				public void onServiceDisconnected(ComponentName name) {				
+				public void onServiceDisconnected(ComponentName name) {		
+					LogUtil.i(TAG, "onServiceDisconnected name  " + name );
 					mServiceStub = null;
 					if (mLibCallback != null ) {						
 						mLibCallback = null;
@@ -116,7 +123,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 				
 				@Override
 				public void onServiceConnected(ComponentName name, IBinder service) {
-					// TODO Auto-generated method stub
+					LogUtil.i(TAG, "onServiceConnected name  " + name + " service = " + service);
 					mServiceStub =  IServiceAIDL.Stub.asInterface(service);
 					if (mLibCallback == null) {
 						mLibCallback = new LibCallbackStub();
@@ -130,6 +137,8 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 					}
 				}
 			}, Context.BIND_AUTO_CREATE);
+
+			LogUtil.d(TAG, "bindService bindResult = " + mBindResult);
 		}
 	}
 	
@@ -139,7 +148,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 
 	//请求打开摄像头
 	public void reqStartCamera(int vedioId) throws RemoteException {
-		LogUtil.i(TAG, "startCamera vedioId  " + vedioId + " mIsCameraOpen = " + mIsCameraOpen);
+		LogUtil.i(TAG, "reqStartCamera vedioId  " + vedioId + " mIsCameraOpen = " + mIsCameraOpen);
 		myVedioId = vedioId;
 		if(getStub() != null){
 			if(getStub().getIsCameraCanUse()){
@@ -148,6 +157,10 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 				}
 			}else{
 				getStub().reqStartCamera(vedioId);
+			}
+		}else{
+			if(mCameraHandler != null){
+				 mCameraHandler.sendEmptyMessage(CAMERA_HANDER_MSG_START);
 			}
 		}
 	}
@@ -171,7 +184,8 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 		return mIsCVBSIn;	
 	}
 	
-	public void doStartPreview(SurfaceHolder holder){		
+	public void doStartPreview(SurfaceHolder holder){	
+		LogUtil.i(TAG, "doStartPreview holder  " + holder);
 		if(mCameraInterface.getCamera() != null){
 			mCameraInterface.doStartPreview(holder);
 		}
@@ -304,13 +318,20 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 		}
 		
 		if(SystemClock.elapsedRealtime() - mOpenCameraOkMillis  < 200){
-			LogUtil.v(TAG, "Camera check cvbs too fast " );
+			LogUtil.v(TAG, "Camera check cvbs too fast isCvbsIn =" + isCvbsIn + "  mIsCVBSIn = " + mIsCVBSIn);
 			return;
 		}
 		
 		if(mIsCVBSIn != isCvbsIn){
 			mIsCVBSIn = isCvbsIn;
 			LogUtil.v(TAG, "Camera mIsCVBSIn = " + mIsCVBSIn );
+			//有信号变化Camera肯定打开了，设置下状态			
+			try {
+				setCameraState(myVedioId,1);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			for (CameraOpenStateListener al : mCameraObservers) {
 				LogUtil.v(TAG, "onCameraCVBSChange");
 				al.onCameraCVBSChange(mIsCVBSIn);
