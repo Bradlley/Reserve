@@ -97,6 +97,15 @@ public class CameraManagerService extends Service
 		@Override
 		public void reqStartCamera(int vedioId) throws RemoteException {
 			LogUtil.v(TAG, "reqStartCamera vedioId = " + vedioId );
+			
+			if(isCameraCanUse()){
+				if(vedioId < 5 && vedioId >= 0){
+					LogUtil.v(TAG, "reqStartCamera error check vedioId = " + vedioId );
+					startCamera(vedioId);
+					return;
+				}
+			}
+			
 			if(vedioId < 5 && vedioId >= 0){
 				mReqStartVedioId = vedioId;
 				for(int i = 0;i < 5;i++){
