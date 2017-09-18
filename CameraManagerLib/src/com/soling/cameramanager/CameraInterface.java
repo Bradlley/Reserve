@@ -49,11 +49,16 @@ public class CameraInterface {
             callback.cameraOpenError();//------------camera打开失败回调
             LogUtil.i(TAG, "AVM catch Camera open....");  	         
             return;
-        }        
+        }    
+        
+        
         LogUtil.i(TAG, "Camera open over....");  
         if(mCamera != null){
             callback.cameraHasOpened(); //------------camera打开成功回调
         	mCamera.setPreviewCallback(preCallback);//---------camera预览数据回调
+        }else{           
+        	 callback.cameraOpenError();//------------camera打开失败回调
+             LogUtil.i(TAG, "AVM  Camera open.is null.");  
         }
     }  
     /**开启预览 
