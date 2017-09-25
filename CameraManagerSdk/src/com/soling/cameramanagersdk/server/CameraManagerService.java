@@ -98,6 +98,7 @@ public class CameraManagerService extends Service
 		public void reqStartCamera(int vedioId) throws RemoteException {
 			LogUtil.v(TAG, "reqStartCamera vedioId = " + vedioId );
 			
+			//快速启动app刚绑定中判断未占用，但是apk中占用,直接打开
 			if(isCameraCanUse()){
 				if(vedioId < 5 && vedioId >= 0){
 					LogUtil.v(TAG, "reqStartCamera error check vedioId = " + vedioId );
@@ -109,7 +110,10 @@ public class CameraManagerService extends Service
 			if(vedioId < 5 && vedioId >= 0){
 				mReqStartVedioId = vedioId;
 				for(int i = 0;i < 5;i++){
-		    		if(mCameraState[i] == 1){
+					//如果AUX请求使用摄像头时倒车仍旧占用摄像头不作处理；
+					if(i == 3 && mCameraState[i] == 1 && mReqStartVedioId != 3){
+						LogUtil.v(TAG, "reqStartCamera error mReqStartVedioId = " + mReqStartVedioId );
+					}else if(mCameraState[i] == 1){
 		    			stopCamera(i);
 		    		}
 		    	}				
