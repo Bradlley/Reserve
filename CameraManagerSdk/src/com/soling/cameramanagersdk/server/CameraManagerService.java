@@ -18,7 +18,8 @@ public class CameraManagerService extends Service
     public static final String TAG = "CameraManagerService";
     private RemoteCallbackList<ILibCallBack> mLibCallbacks = new RemoteCallbackList<ILibCallBack>();
     
-    int[] mCameraState = {0, 0, 0, 0, 0};
+    //0 AVIN 1 DVR 2 NIGHT 3 PRAKING 4 SPI_AVM 5 DTV //6-7 预留
+    int[] mCameraState = {0, 0, 0, 0, 0, 0, 0, 0};
     int mReqStartVedioId = -1;
     
     /**
@@ -100,16 +101,16 @@ public class CameraManagerService extends Service
 			
 			//快速启动app刚绑定中判断未占用，但是apk中占用,直接打开
 			if(isCameraCanUse()){
-				if(vedioId < 5 && vedioId >= 0){
+				if(vedioId < mCameraState.length && vedioId >= 0){
 					LogUtil.v(TAG, "reqStartCamera error check vedioId = " + vedioId );
 					startCamera(vedioId);
 					return;
 				}
 			}
 			
-			if(vedioId < 5 && vedioId >= 0){
+			if(vedioId < mCameraState.length && vedioId >= 0){
 				mReqStartVedioId = vedioId;
-				for(int i = 0;i < 5;i++){
+				for(int i = 0;i < mCameraState.length;i++){
 					//如果AUX请求使用摄像头时倒车仍旧占用摄像头不作处理；
 					if(i == 3 && mCameraState[i] == 1 && mReqStartVedioId != 3){
 						LogUtil.v(TAG, "reqStartCamera error mReqStartVedioId = " + mReqStartVedioId );
@@ -126,7 +127,7 @@ public class CameraManagerService extends Service
 		public void setStopCameraOver(int vedioId) throws RemoteException {
 			LogUtil.v(TAG, "setStopCameraOver vedioId = " + vedioId + " mReqStartVedioId = " + mReqStartVedioId );
 			if(isCameraCanUse()){
-				if(mReqStartVedioId < 5 && mReqStartVedioId >= 0){
+				if(mReqStartVedioId < mCameraState.length && mReqStartVedioId >= 0){
 					startCamera(mReqStartVedioId);
 					mReqStartVedioId = -1;
 				}
@@ -142,14 +143,14 @@ public class CameraManagerService extends Service
 		@Override 
 		public void setCameraState(int vedioId, int state) throws RemoteException {
 			LogUtil.v(TAG, "setCameraState vedioId = " + vedioId + " state = " + state);
-			if(vedioId < 5 && vedioId >= 0)
+			if(vedioId < mCameraState.length && vedioId >= 0)
 				mCameraState[vedioId] = state;
 		}
        
     };
     
     private boolean isCameraCanUse(){
-    	for(int i = 0;i < 5;i++){
+    	for(int i = 0;i < mCameraState.length;i++){
     		if(mCameraState[i] == 1){
     			LogUtil.v(TAG, "isCameraCanUse userid = " + i );
     			return false;
