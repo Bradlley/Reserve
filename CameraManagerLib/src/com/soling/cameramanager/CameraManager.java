@@ -42,7 +42,8 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	private int myVedioId = 0;
 	private boolean mIsCVBSIn = false;
 	private boolean mIsCameraOpen = false;
-	private static long mOpenCameraOkMillis = 0;
+	private static long mOpenCameraOkMillis = 0; //camera打开成功到cvbs记时200ms防抖
+	private static long mReqOpenCameraMillis = 0; //请求打开camrea到预览最少300ms
 	private final Handler mHandler = new Handler();
 	private int mBindNum = 0;
 
@@ -279,6 +280,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 					mIsCVBSIn = false;
 					LogUtil.v(TAG, "Vedio  "+ myVedioId + " startCamera  mIsCVBSIn = " + mIsCVBSIn );
 					setCameraState(myVedioId,1);
+					mReqOpenCameraMillis = SystemClock.elapsedRealtime();
 					mCameraInterface.doOpenCamera(CameraManager.this, CameraManager.this);
 				} catch (RemoteException e) {
 					e.printStackTrace();
@@ -363,6 +365,21 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		//如果打开摄像头太快等等下等待surfaceview创建成功
+		long time = SystemClock.elapsedRealtime() - mReqOpenCameraMillis;		
+		if(time  < 300){
+			LogUtil.v(TAG, "Camera open  too fast time = " + time);
+			synchronized (Thread.currentThread()) {  
+				try {
+					Thread.sleep(time);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}  			
+		}		
+		
 		for (CameraOpenStateListener al : mCameraObservers) {
 			LogUtil.i(TAG, "cameraHasOpened");
 			al.onCameraHasOpened();
