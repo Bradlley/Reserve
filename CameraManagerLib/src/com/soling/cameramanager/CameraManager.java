@@ -325,6 +325,8 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 		if(isALL_16 && (data[0] == 16)){
 			isCvbsIn = false;
 		}
+		//回收内存
+		CameraInterface.getInstance().addCallbackBuffer(data);
 		
 		if(SystemClock.elapsedRealtime() - mOpenCameraOkMillis  < 200){
 			LogUtil.v(TAG, "Camera check cvbs too fast isCvbsIn =" + isCvbsIn + "  mIsCVBSIn = " + mIsCVBSIn);

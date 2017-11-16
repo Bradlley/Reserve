@@ -1,11 +1,13 @@
 package com.soling.cameramanager;
 
-import java.io.IOException;  
-import java.util.List;  
+import java.io.IOException; 
 
 import com.soling.camreamanager.util.LogUtil;
+
+import android.graphics.ImageFormat;
 import android.hardware.Camera; 
 import android.hardware.Camera.PreviewCallback;
+import android.hardware.Camera.Size;
 import android.util.Log;  
 import android.view.SurfaceHolder;  
   
@@ -35,6 +37,12 @@ public class CameraInterface {
     public Camera getCamera(){
     	return mCamera;
     }
+    
+    public void addCallbackBuffer(byte[] data){
+    	if(mCamera != null){
+    		mCamera.addCallbackBuffer(data);    	
+    	}
+    }  
       
     /**打开Camera 
      * @param callback 
@@ -55,7 +63,17 @@ public class CameraInterface {
         LogUtil.i(TAG, "Camera open over....");  
         if(mCamera != null){
             callback.cameraHasOpened(); //------------camera打开成功回调
-        	mCamera.setPreviewCallback(preCallback);//---------camera预览数据回调
+        	//mCamera.setPreviewCallback(preCallback);//---------camera预览数据回调
+            
+            //更换回调方式，解决gc回收问题
+            mCamera.setPreviewCallbackWithBuffer(preCallback);
+            mParams = mCamera.getParameters();  
+            Size previewSize = com.soling.camreamanager.util.CamParaUtil.getInstance().getPropPreviewSize(  
+                    mParams.getSupportedPreviewSizes(), 1, 800);   
+            Log.i(TAG, "PreviewSize--With = " + previewSize.width + "Height = " + previewSize.height); 
+            
+            mCamera.addCallbackBuffer(new byte[((previewSize.width * previewSize.height) * ImageFormat.getBitsPerPixel(ImageFormat.NV21)) / 8]);
+
         }else{           
         	 callback.cameraOpenError();//------------camera打开失败回调
              LogUtil.i(TAG, "AVM  Camera open.is null.");  
@@ -125,6 +143,7 @@ public class CameraInterface {
             {  
     			LogUtil.d(TAG, "doStopPreview");
                 mCamera.setPreviewCallback(null); //--------清空预览数据
+                mCamera.addCallbackBuffer(null);
                 mCamera.stopPreview();  //--------停止预览
                 isPreviewing = false;  
                 mPreviwRate = -1f;  
