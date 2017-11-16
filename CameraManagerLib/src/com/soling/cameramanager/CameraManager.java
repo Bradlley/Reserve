@@ -192,6 +192,13 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 		}
 	}
 	
+	public void doStopPreview(){	
+		LogUtil.i(TAG, "doStopPreview ");
+		if(mCameraInterface.getCamera() != null){
+			mCameraInterface.doStopPreview();
+		}
+	}
+	
 	public void setStopCameraOver(int vedioId) throws RemoteException {
 		LogUtil.i(TAG, "setStopCameraOver vedioId  " + vedioId);
 		if(getStub() != null)
