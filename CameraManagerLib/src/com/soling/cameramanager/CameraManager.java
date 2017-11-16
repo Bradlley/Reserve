@@ -313,6 +313,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		boolean isCvbsIn = true;
 		boolean isALL_16 = true; //前面10个数据是否都是16，是的话表示无信号
+		
 		if(data.length >= 10){
 			for(int i = 0;i < 10;i++){
 				if(data[i] != data[i+1]){
