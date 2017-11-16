@@ -116,7 +116,8 @@ public class CameraInterface {
             {  
     			LogUtil.d(TAG, "doStopCamera start");
     			try {  
-				 	mCamera.setPreviewCallback(null); //--------清空预览数据
+    				mCamera.setPreviewCallbackWithBuffer(null);//--------清空预览数据
+        			mCamera.setPreviewCallback(null);
 				 	mCamera.addCallbackBuffer(null);
 	                mCamera.stopPreview();  //--------停止预览
 	                isPreviewing = false;  
