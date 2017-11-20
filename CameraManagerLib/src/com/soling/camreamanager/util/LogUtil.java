@@ -87,13 +87,13 @@ public class LogUtil {
     public static void log(String tag, String msg, int type) {  
         switch (type) {  
         case VERBOSE:  
-            v(tag, msg);// verbose等级  
+            d(tag, msg);// verbose等级  
             break;  
         case DEBUG:  
             d(tag, msg);// debug等级  
             break;  
         case INFO:  
-            i(tag, msg);// info等级  
+            d(tag, msg);// info等级  
             break;  
         case WARN:  
             w(tag, msg);// warn等级  

@@ -4,12 +4,17 @@ import java.util.ArrayList;
 
 import com.soling.cameramanager.CameraInterface.CamOpenOverCallback;
 import com.soling.camreamanager.imp.CameraListenerImp;
+import com.soling.camreamanager.multiscreen.PresenttationManager;
+import com.soling.camreamanager.preview.CameraGLSurfaceView;
+import com.soling.camreamanager.preview.TextureUtil;
 import com.soling.camreamanager.util.LogUtil;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.SurfaceTexture;
+import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Handler;
@@ -24,7 +29,7 @@ import android.view.View;
 /**
  * @author:soling
  */
-public class CameraManager implements CamOpenOverCallback,PreviewCallback{
+public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFrameAvailableListener{
 	private final String TAG = CameraManager.class.getSimpleName();
 	
 	private final String ServerPackageName = "com.soling.cameramanagersdk";
@@ -48,6 +53,11 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	private int mBindNum = 0;
 
 	boolean mBindResult = false;
+	
+	private CameraGLSurfaceView mGlSurfaceView[];//前屏显示画布
+	private boolean mIsNeedRearScreen = false; //是否支持后屏显示
+	private boolean mIsOpenRearScreen = false; //是否开启后屏
+	private boolean mIsShowRearScreen = false; //是否显示后屏
 	
 	//-------------------------------提供的camera 打开状态---------------------------------------
 	/**
@@ -74,7 +84,15 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 		 */
 		void onCameraCVBSChange(boolean isCvbs);
 		
-	}	
+	}
+	
+	//初始化CameraManager时候要一起调用
+	public void initPresenttationManager(boolean isNeedRearScreen){
+		LogUtil.v(TAG, " CameraManager init ");
+		mIsNeedRearScreen = isNeedRearScreen;
+		if(isNeedRearScreen)
+			PresenttationManager.getInstence(mContext);
+	}
 	
 	public CameraManager(Context mContext) {
 		LogUtil.v(TAG, " CameraManager init ");
@@ -84,14 +102,17 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 		thread.start();
 		mCameraHandler = new CameraHandler(thread.getLooper());
 		mCameraInterface = CameraInterface.getInstance();
+		TextureUtil.getInstance().setOnFrameAvailableListener(this);
+		
 	}
 
-	public static CameraManager getInstance(Context mContext) {
+	public static CameraManager getInstance(Context mContext){
 		if (null == mInstance) {
 			mInstance =  new CameraManager(mContext);
 		}		
 		return mInstance;
 	}	
+	
 	
 	private IServiceAIDL getStub() {
 		if (null == mServiceStub) {
@@ -164,6 +185,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 				 mCameraHandler.sendEmptyMessage(CAMERA_HANDER_MSG_START);
 			}
 		}
+		
 	}
 	
 	//关闭摄像头
@@ -183,12 +205,53 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 	public boolean getCvbsState(){	
 		LogUtil.v(TAG, "Vedio  "+ myVedioId + " getCvbsState = " + mIsCVBSIn );
 		return mIsCVBSIn;	
+	}	
+	
+	//是否开启后屏显示 用于开关
+	public void setOpenRearScreen(boolean isOpen){
+		LogUtil.v(TAG, "setOpenRearScreen isOpen = " + isOpen );
+		mIsOpenRearScreen = isOpen;
+		if(mIsOpenRearScreen){
+			showRearScreen();
+		}else{
+			hideRearScreen();
+		}
 	}
 	
-	public void doStartPreview(SurfaceHolder holder){	
-		LogUtil.i(TAG, "doStartPreview holder  " + holder);
+	//显示自己的后屏到前台
+	public void showRearScreen(){
+		if(mIsOpenRearScreen){
+			mIsShowRearScreen = true;
+			PresenttationManager.getInstence(mContext).showAllDisPlay();
+		}
+	}
+	
+	//隐藏自己的后屏显示
+	public void hideRearScreen(){
+		PresenttationManager.getInstence(mContext).disMissDisPlay();
+		mIsShowRearScreen = false;         
+	}
+	
+	public void doStartPreview(CameraGLSurfaceView[] glSurfaceView){	
+		LogUtil.i(TAG, "doStartPreview glSurfaceView  " + glSurfaceView);
+		mGlSurfaceView = glSurfaceView;
 		if(mCameraInterface.getCamera() != null){
-			mCameraInterface.doStartPreview(holder);
+			if(!CameraInterface.getInstance().isPreviewing()){
+				CameraInterface.getInstance().doStartPreview(TextureUtil.getInstance());
+			}  	  
+		}
+	}
+	
+	public void doStartPreview(CameraGLSurfaceView glSurfaceView){	
+		LogUtil.i(TAG, "doStartPreview glSurfaceView  " + glSurfaceView);
+		if(mGlSurfaceView == null){
+			mGlSurfaceView = new CameraGLSurfaceView[1];
+		}
+		mGlSurfaceView[0] = glSurfaceView;
+		if(mCameraInterface.getCamera() != null){
+			if(!CameraInterface.getInstance().isPreviewing()){
+				CameraInterface.getInstance().doStartPreview(TextureUtil.getInstance());
+			}  	  
 		}
 	}
 	
@@ -300,6 +363,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 						LogUtil.v(TAG, "Vedio  "+ myVedioId + " stopCamera  mIsCVBSIn = " + mIsCVBSIn );		
 						setCameraState(myVedioId,0);
 						setStopCameraOver(myVedioId);
+						hideRearScreen();
 					} catch (RemoteException e) {
 						e.printStackTrace();
 					}
@@ -394,6 +458,31 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback{
 			LogUtil.i(TAG, "cameraHasOpened");
 			al.onCameraHasOpened();
 		}	
+		
+	}
+
+	//SurfaceTexture 回调
+	@Override
+	public void onFrameAvailable(SurfaceTexture arg0) {
+		
+		if(!CameraInterface.getInstance().isPreviewing()){			
+			CameraInterface.getInstance().doStartPreview(TextureUtil.getInstance());
+		}
+		
+		if(CameraInterface.getInstance().isPreviewing()){
+			//LogUtil.i(TAG, "onFrameAvailable...");
+			if(mGlSurfaceView != null){
+				for(CameraGLSurfaceView glSurfaceView:mGlSurfaceView){
+					//LogUtil.i(TAG, "onFrameAvailable...glSurfaceView.isShown = " + glSurfaceView.isShown());
+					if(glSurfaceView != null && glSurfaceView.isShown()){						
+						glSurfaceView.requestRender();
+					}
+				}
+			}
+		//	LogUtil.i(TAG, "onFrameAvailable...mIsOpenRearScreen = " + mIsOpenRearScreen + "  mIsNeedRearScreen =" + mIsNeedRearScreen + "  mIsShowRearScreen = " + mIsShowRearScreen);
+			if(mIsOpenRearScreen && mIsNeedRearScreen && mIsShowRearScreen)
+				PresenttationManager.getInstence(mContext).updateDisplay();
+		}
 		
 	}
 }

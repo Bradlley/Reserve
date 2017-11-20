@@ -1,10 +1,13 @@
 package com.soling.cameramanager;
 
 import java.io.IOException; 
+import java.util.List;
 
 import com.soling.camreamanager.util.LogUtil;
 
 import android.graphics.ImageFormat;
+import android.graphics.PixelFormat;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera; 
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
@@ -21,7 +24,7 @@ public class CameraInterface {
   
     public interface CamOpenOverCallback{  
         public void cameraHasOpened();
-        public void cameraOpenError(); 
+        public void cameraOpenError();
     }  
   
     private CameraInterface(){  
@@ -38,6 +41,10 @@ public class CameraInterface {
     	return mCamera;
     }
     
+    public boolean isPreviewing(){
+		return isPreviewing;
+	}
+    
     public void addCallbackBuffer(byte[] data){
     	if(mCamera != null){
     		mCamera.addCallbackBuffer(data);    	
@@ -51,11 +58,11 @@ public class CameraInterface {
     	LogUtil.i(TAG, "Camera open....");  
         doStopCamera();
         try {
-        	LogUtil.i(TAG, "AVM try Camera open....");  
+        	LogUtil.i(TAG, "try Camera open....");  
             mCamera = Camera.open();	           
         } catch (Exception e) {           
             callback.cameraOpenError();//------------camera打开失败回调
-            LogUtil.i(TAG, "AVM catch Camera open....");  	         
+            LogUtil.i(TAG, "catch Camera open....");  	         
             return;
         }    
         
@@ -76,7 +83,7 @@ public class CameraInterface {
 
         }else{           
         	 callback.cameraOpenError();//------------camera打开失败回调
-             LogUtil.i(TAG, "AVM  Camera open.is null.");  
+             LogUtil.i(TAG, " Camera open.is null.");  
         }
     }  
     /**开启预览 
@@ -107,6 +114,36 @@ public class CameraInterface {
                     + "Height = " + mParams.getPictureSize().height);  
         }  
     }  
+    
+    /**使用TextureView预览Camera
+   	 * @param surface
+   	 * @param previewRate
+   	 */
+   	public void doStartPreview(SurfaceTexture surface){
+   		Log.i(TAG, "doStartPreview..SurfaceTexture.");
+   		if(isPreviewing){
+//   			mCamera.stopPreview();
+   			return;
+   		}
+   		if(mCamera != null){
+   			try {
+   				mCamera.setPreviewTexture(surface);
+   				mCamera.startPreview();//开启预览
+   			} catch (IOException e) {
+   				// TODO Auto-generated catch block
+   				e.printStackTrace();
+   			}   
+   			
+   		   isPreviewing = true;  
+   		   mParams = mCamera.getParameters(); //重新get一次  
+           Log.i(TAG, "最终设置:PreviewSize--With = " + mParams.getPreviewSize().width  
+                   + "Height = " + mParams.getPreviewSize().height);  
+           Log.i(TAG, "最终设置:PictureSize--With = " + mParams.getPictureSize().width  
+                   + "Height = " + mParams.getPictureSize().height);  
+   		}
+
+   	}
+    
     /** 
      * 停止预览，释放Camera 
      */  
@@ -153,6 +190,5 @@ public class CameraInterface {
         } catch (Exception e) {
             Log.e(TAG, "AVM doStopPreview error...."); 
         }         
-    }  
-  
+    }      
 }  
