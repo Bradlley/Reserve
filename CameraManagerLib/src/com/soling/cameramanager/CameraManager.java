@@ -59,6 +59,8 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 	private boolean mIsOpenRearScreen = false; //是否开启后屏
 	private boolean mIsShowRearScreen = false; //是否显示后屏
 	
+	private CameraGLSurfaceView mPipGlSurfaceView;//pip画布
+	
 	//-------------------------------提供的camera 打开状态---------------------------------------
 	/**
 	 * listener interface, apps need fix model.
@@ -216,7 +218,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 		}else{
 			hideRearScreen();
 		}
-	}
+	}	
 	
 	//显示自己的后屏到前台
 	public void showRearScreen(){
@@ -232,8 +234,13 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 		mIsShowRearScreen = false;         
 	}
 	
+	public void setPipSurfaceView(CameraGLSurfaceView glSurfaceView){
+		mPipGlSurfaceView = glSurfaceView;
+		LogUtil.i(TAG, "setPipSurfaceView  mPipGlSurfaceView = " + mPipGlSurfaceView);
+	}
+	
 	public void doStartPreview(CameraGLSurfaceView[] glSurfaceView){	
-		LogUtil.i(TAG, "doStartPreview glSurfaceView  " + glSurfaceView);
+		LogUtil.i(TAG, "doStartPreview glSurfaceView =  " + glSurfaceView);
 		mGlSurfaceView = glSurfaceView;
 		if(mCameraInterface.getCamera() != null){
 			if(!CameraInterface.getInstance().isPreviewing()){
@@ -465,10 +472,6 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 	@Override
 	public void onFrameAvailable(SurfaceTexture arg0) {
 		
-		if(!CameraInterface.getInstance().isPreviewing()){			
-			CameraInterface.getInstance().doStartPreview(TextureUtil.getInstance());
-		}
-		
 		if(CameraInterface.getInstance().isPreviewing()){
 			//LogUtil.i(TAG, "onFrameAvailable...");
 			if(mGlSurfaceView != null){
@@ -479,6 +482,12 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 					}
 				}
 			}
+			
+			if(mPipGlSurfaceView != null){
+				//LogUtil.i(TAG, "mPipGlSurfaceView ...onFrameAvailable");
+				mPipGlSurfaceView.requestRender();
+			}
+			
 		//	LogUtil.i(TAG, "onFrameAvailable...mIsOpenRearScreen = " + mIsOpenRearScreen + "  mIsNeedRearScreen =" + mIsNeedRearScreen + "  mIsShowRearScreen = " + mIsShowRearScreen);
 			if(mIsOpenRearScreen && mIsNeedRearScreen && mIsShowRearScreen)
 				PresenttationManager.getInstence(mContext).updateDisplay();

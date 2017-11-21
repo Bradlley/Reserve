@@ -43,7 +43,7 @@ public  class TextureUtil {
         
         return mSurfaceTexture;
     }
-    public synchronized static void draw(DirectDrawer mDirectDrawer,int mTextureID){
+    public static void draw(DirectDrawer mDirectDrawer,int mTextureID){
 
             // TODO Auto-generated method stub
            // Log.i(TAG, "开始绘制纹理Frame..." + mTextureID);
