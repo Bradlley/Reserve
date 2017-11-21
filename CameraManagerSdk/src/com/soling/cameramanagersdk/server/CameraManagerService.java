@@ -111,6 +111,14 @@ public class CameraManagerService extends Service
 			if(vedioId < mCameraState.length && vedioId >= 0){
 				mReqStartVedioId = vedioId;
 				for(int i = 0;i < mCameraState.length;i++){
+					
+					//如果请求的是占用的那一个直接打开（同一个进程请求的，可能是之前app死掉了）
+					if(mReqStartVedioId == i && mCameraState[mReqStartVedioId] == 1){
+						startCamera(mReqStartVedioId);
+						mReqStartVedioId = -1;
+						LogUtil.v(TAG, "reqStartCamera error app died = " + mReqStartVedioId );
+					}					
+
 					//如果AUX请求使用摄像头时倒车仍旧占用摄像头不作处理；
 					if(i == 3 && mCameraState[i] == 1 && mReqStartVedioId != 3){
 						LogUtil.v(TAG, "reqStartCamera error mReqStartVedioId = " + mReqStartVedioId );
