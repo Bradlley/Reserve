@@ -98,7 +98,7 @@ public class DirectDrawer {
         GLES20.glLinkProgram(mProgram);                  // creates OpenGL ES program executables
     }
 
-    public synchronized void draw(float[] mtx)
+    public void draw(float[] mtx)
     {
         GLES20.glUseProgram(mProgram);
 

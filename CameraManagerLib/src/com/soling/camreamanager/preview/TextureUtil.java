@@ -28,6 +28,8 @@ public  class TextureUtil {
         
         return mSurfaceTexture;
     }
+	
+	
     public static SurfaceTexture getInstance(){
         if(mSurfaceTexture == null){
             mSurfaceTexture = new SurfaceTexture(createTextureID());
@@ -38,12 +40,12 @@ public  class TextureUtil {
                 LogUtil.d(TAG,"初次detach失败");
             }
         }
-        
-        Surface a  = new Surface(mSurfaceTexture);
-        
+
         return mSurfaceTexture;
     }
-    public static void draw(DirectDrawer mDirectDrawer,int mTextureID){
+	
+	
+    public synchronized static void draw(DirectDrawer mDirectDrawer,int mTextureID){
 
             // TODO Auto-generated method stub
            // Log.i(TAG, "开始绘制纹理Frame..." + mTextureID);

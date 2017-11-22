@@ -47,8 +47,7 @@ public class CameraGLSurfaceView extends GLSurfaceView implements Renderer{
 		// TODO Auto-generated method stub
 		LogUtil.i(TAG, "onSurfaceCreated...");
 		mTextureID = createTextureID();
-		if(mDirectDrawer == null)
-			mDirectDrawer = new DirectDrawer(mTextureID);
+		mDirectDrawer = new DirectDrawer(mTextureID);
 
 	}
 	@Override
@@ -65,19 +64,9 @@ public class CameraGLSurfaceView extends GLSurfaceView implements Renderer{
 		TextureUtil.draw(mDirectDrawer,mTextureID);
 	}
 	
-	public boolean isOnResume(){
-		return isOnResume;
-	}
-	
-	@Override
-	public void onResume() {
-		isOnResume = true;
-		super.onResume();
-	}	
-	
 	@Override
 	public void onPause() {
-		isOnResume = false;
+		// TODO Auto-generated method stub
 		super.onPause();	
 	}
 	
