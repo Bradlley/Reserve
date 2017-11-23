@@ -212,16 +212,25 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 	//是否开启后屏显示 用于开关
 	public void setOpenRearScreen(boolean isOpen){
 		LogUtil.v(TAG, "setOpenRearScreen isOpen = " + isOpen );
-		mIsOpenRearScreen = isOpen;
+		if(!mIsNeedRearScreen ){
+			LogUtil.v(TAG, "setOpenRearScreen not need NeedRearScreen");
+			return;
+		}
+		mIsOpenRearScreen = isOpen;		
 		if(mIsOpenRearScreen){
-			showRearScreen();
+			LogUtil.v(TAG, "please show by user");
 		}else{
 			hideRearScreen();
 		}
 	}	
 	
 	//显示自己的后屏到前台
-	public void showRearScreen(){
+	public void showRearScreen(){		
+		if(!mIsNeedRearScreen && mIsOpenRearScreen){
+			LogUtil.v(TAG, "showRearScreen mIsNeedRearScreen = " + mIsNeedRearScreen + ";mIsOpenRearScreen = " + mIsOpenRearScreen);
+			return;
+		}
+		
 		if(mIsOpenRearScreen){
 			mIsShowRearScreen = true;
 			PresenttationManager.getInstence(mContext).showAllDisPlay();
@@ -237,6 +246,13 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 	public void setPipSurfaceView(CameraGLSurfaceView glSurfaceView){
 		mPipGlSurfaceView = glSurfaceView;
 		LogUtil.i(TAG, "setPipSurfaceView  mPipGlSurfaceView = " + mPipGlSurfaceView);
+	}
+	
+	public void doStartPreview(SurfaceHolder holder){	
+		LogUtil.i(TAG, "doStartPreview holder  " + holder);
+		if(mCameraInterface.getCamera() != null){
+			mCameraInterface.doStartPreview(holder);
+		}
 	}
 	
 	public void doStartPreview(CameraGLSurfaceView[] glSurfaceView){	
@@ -370,7 +386,6 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 						LogUtil.v(TAG, "Vedio  "+ myVedioId + " stopCamera  mIsCVBSIn = " + mIsCVBSIn );		
 						setCameraState(myVedioId,0);
 						setStopCameraOver(myVedioId);
-						hideRearScreen();
 					} catch (RemoteException e) {
 						e.printStackTrace();
 					}
