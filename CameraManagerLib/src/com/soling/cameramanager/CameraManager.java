@@ -44,7 +44,7 @@ public class CameraManager implements CamOpenOverCallback,PreviewCallback,OnFram
 	private Context mContext;
 	private CameraHandler mCameraHandler;	
 	private CameraInterface mCameraInterface;
-	private int myVedioId = 0;
+	private int myVedioId = -1; //有数据默认是0,
 	private boolean mIsCVBSIn = false;
 	private boolean mIsCameraOpen = false;
 	private static long mOpenCameraOkMillis = 0; //camera打开成功到cvbs记时200ms防抖

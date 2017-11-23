@@ -19,7 +19,7 @@ public class CameraManagerService extends Service
     private RemoteCallbackList<ILibCallBack> mLibCallbacks = new RemoteCallbackList<ILibCallBack>();
     
     //0 AVIN 1 DVR 2 NIGHT 3 PRAKING 4 SPI_AVM 5 DTV //6-7 预留
-    int[] mCameraState = {0, 0, 0, 0, 0, 0, 0, 0};
+    int[] mCameraState = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int mReqStartVedioId = -1;
     
     /**
